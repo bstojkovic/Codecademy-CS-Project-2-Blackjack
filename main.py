@@ -2,9 +2,9 @@ import random
 
 class Card:
     """ A representation of a playing card.
-    
+
     Card is a node in a stack-based Deck.
-    
+
     Attributes:
         rank (int): Card value, 0-12.
             0-8 corresponding to 2-10.
@@ -12,9 +12,9 @@ class Card:
         suit (int): Card category.
             0-3 corresponding to spades, clubs, diamonds, hearts respectively.
         next_card (Card): The next Card in the deck.
-    
+
     """
-    
+
     def __init__(self, rank, suit, next_card=None):
         self.rank = rank
         self.suit = suit
@@ -28,9 +28,21 @@ class Card:
         return ['J', 'Q', 'K', 'A'][self.rank - 9]
 
     @property
+    def rank_long_str(self):
+        """ str: A long representation of the rank of the Card. """
+        return [
+            'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+            'nine', 'ten', 'jack', 'queen', 'king', 'ace'
+        ][self.rank]
+
+    @property
     def suit_icon_str(self):
         """ str: A unicode icon representation of the suit of the Card. """
         return ['♠', '♣', '♦', '♥'][self.suit]
+
+    @property
+    def is_face_card(self):
+        return self.rank > 8
 
     def __str__(self):
         rank = self.rank_short_str
@@ -45,9 +57,9 @@ class Deck:
 
     Attributes:
         top_card (Card): The top card of the Deck, which is to be dealt first.
-    
+
     """
-    
+
     def __init__(self, top_card=None):
         self.top_card = top_card
 
@@ -76,19 +88,17 @@ class Deck:
 
         return deck
 
-def prompt_choice():
+def prompt_choice(choices):
     """ Prompt for a choice until a valid response is given. """
     print()
     print('What do you want to do?')
-
-    choices = ['stay']
 
     for i, choice in enumerate(choices):
         print(f'{i + 1}. {choice}')
 
     while True:
         user_choice = input()
-        
+
         try:
             user_choice = int(user_choice)
         except ValueError:
@@ -98,13 +108,34 @@ def prompt_choice():
         if user_choice not in range(1, len(choices) + 1):
             print('Please input one of the provided choices.')
             continue
-        
+
         break
 
     choice_str = choices[user_choice - 1]
     print(f'You chose to {choice_str}.')
 
     return choice_str
+
+def calculate_hand_value(hand):
+    """ Calculate the total value of cards in a hand (list). """
+    total_card_value = 0
+
+    for card in hand:
+        if card.is_face_card:
+            if card.rank_long_str == 'ace':
+                # If card is an ace, it is valued as 1
+                #   if valuing it as 11 would lead to a bust.
+                if total_card_value + 11 > 21:
+                    total_card_value += 1
+                else:
+                    total_card_value += 11
+            else:
+                total_card_value += 10
+        else:
+            # A numeric card is valued according to its numeric value.
+            total_card_value += card.rank + 2
+
+    return total_card_value
 
 player_cards = []
 dealer_cards = []
@@ -115,7 +146,18 @@ dealer_cards.append(deck.pop())
 player_cards.append(deck.pop())
 dealer_cards.append(deck.pop())
 
-print('Your cards:', ', '.join(map(str, player_cards)))
-print("Dealer's cards:", ', '.join(map(str, dealer_cards)))
+while True:
+    print('Your hand:', ', '.join(map(str, player_cards)))
+    print("Dealer's hand:", ', '.join(map(str, dealer_cards)))
 
-prompt_choice()
+    choice = prompt_choice(['stay', 'hit'])
+    print()
+    if choice == 'stay':
+        break
+    elif choice == 'hit':
+        player_cards.append(deck.pop())
+
+        hand_value = calculate_hand_value(player_cards)
+        if hand_value > 21:
+            print(f'You have busted with total hand value of {hand_value}.')
+            break
