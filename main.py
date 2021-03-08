@@ -90,6 +90,7 @@ class Deck:
 
 def prompt_choice(choices):
     """ Prompt for a choice until a valid response is given. """
+
     print()
     print('What do you want to do?')
 
@@ -118,6 +119,7 @@ def prompt_choice(choices):
 
 def calculate_hand_value(hand):
     """ Calculate the total value of cards in a hand (list). """
+
     total_card_value = 0
 
     for card in hand:
@@ -137,62 +139,75 @@ def calculate_hand_value(hand):
 
     return total_card_value
 
-player_cards = []
-dealer_cards = []
+def game():
+    """ Play a single blackjack session. """
 
-print('Dealer shuffles a deck of cards.')
-deck = Deck.random()
+    player_cards = []
+    dealer_cards = []
 
-card = deck.pop()
-player_cards.append(card)
-print(f'Dealer deals you {card}')
+    print('Dealer shuffles a deck of cards.')
+    deck = Deck.random()
 
-card = deck.pop()
-dealer_cards.append(card)
-print(f'Dealer deals himself {card}')
+    card = deck.pop()
+    player_cards.append(card)
+    print(f'Dealer deals you {card}')
 
-card = deck.pop()
-player_cards.append(card)
-print(f'Dealer deals you {card}')
+    card = deck.pop()
+    dealer_cards.append(card)
+    print(f'Dealer deals himself {card}')
 
-card = deck.pop()
-dealer_cards.append(card)
-print(f'Dealer deals himself {card}')
+    card = deck.pop()
+    player_cards.append(card)
+    print(f'Dealer deals you {card}')
+
+    card = deck.pop()
+    dealer_cards.append(card)
+    print(f'Dealer deals himself {card}')
+
+    while True:
+        print()
+        print('Your hand:', ', '.join(map(str, player_cards)))
+        print("Dealer's hand:", ', '.join(map(str, dealer_cards)))
+
+        choice = prompt_choice(['stay', 'hit'])
+        print()
+        if choice == 'stay':
+            dealer_hand_value = calculate_hand_value(dealer_cards)
+            player_hand_value = calculate_hand_value(player_cards)
+
+            if dealer_hand_value == player_hand_value:
+                print(
+                    "It's a tie. Both the dealer and you "
+                    f'have the same hand value of {player_hand_value}.'
+                )
+            elif player_hand_value > dealer_hand_value:
+                print(
+                    'You win! Your hand value is '
+                    f"{player_hand_value} vs dealer's {dealer_hand_value}."
+                )
+            else:
+                print(
+                    'You lose. Your hand value is '
+                    f"{player_hand_value} vs dealer's {dealer_hand_value}."
+                )
+            break
+        elif choice == 'hit':
+            card = deck.pop()
+            player_cards.append(card)
+            print(f'Dealer deals you {card}')
+
+            hand_value = calculate_hand_value(player_cards)
+            if hand_value > 21:
+                print()
+                print(f'You have busted with hand value of {hand_value}.')
+                break
+
+game()
 
 while True:
-    print()
-    print('Your hand:', ', '.join(map(str, player_cards)))
-    print("Dealer's hand:", ', '.join(map(str, dealer_cards)))
-
-    choice = prompt_choice(['stay', 'hit'])
-    print()
-    if choice == 'stay':
-        dealer_hand_value = calculate_hand_value(dealer_cards)
-        player_hand_value = calculate_hand_value(player_cards)
-
-        if dealer_hand_value == player_hand_value:
-            print(
-                "It's a tie. Both the dealer and you "
-                f'have the same hand value of {player_hand_value}.'
-            )
-        elif player_hand_value > dealer_hand_value:
-            print(
-                'You win! Your hand value is '
-                f"{player_hand_value} vs dealer's {dealer_hand_value}."
-            )
-        else:
-            print(
-                'You lose. Your hand value is '
-                f"{player_hand_value} vs dealer's {dealer_hand_value}."
-            )
+    choice = prompt_choice(['play again', 'quit'])
+    if choice == 'play again':
+        print()
+        game()
+    elif choice == 'quit':
         break
-    elif choice == 'hit':
-        card = deck.pop()
-        player_cards.append(card)
-        print(f'Dealer deals you {card}')
-
-        hand_value = calculate_hand_value(player_cards)
-        if hand_value > 21:
-            print()
-            print(f'You have busted with hand value of {hand_value}.')
-            break
