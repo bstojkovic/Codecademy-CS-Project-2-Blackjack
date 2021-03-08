@@ -140,13 +140,27 @@ def calculate_hand_value(hand):
 player_cards = []
 dealer_cards = []
 
+print('Dealer shuffles a deck of cards.')
 deck = Deck.random()
-player_cards.append(deck.pop())
-dealer_cards.append(deck.pop())
-player_cards.append(deck.pop())
-dealer_cards.append(deck.pop())
+
+card = deck.pop()
+player_cards.append(card)
+print(f'Dealer deals you {card}')
+
+card = deck.pop()
+dealer_cards.append(card)
+print(f'Dealer deals himself {card}')
+
+card = deck.pop()
+player_cards.append(card)
+print(f'Dealer deals you {card}')
+
+card = deck.pop()
+dealer_cards.append(card)
+print(f'Dealer deals himself {card}')
 
 while True:
+    print()
     print('Your hand:', ', '.join(map(str, player_cards)))
     print("Dealer's hand:", ', '.join(map(str, dealer_cards)))
 
@@ -155,9 +169,12 @@ while True:
     if choice == 'stay':
         break
     elif choice == 'hit':
-        player_cards.append(deck.pop())
+        card = deck.pop()
+        player_cards.append(card)
+        print(f'Dealer deals you {card}')
 
         hand_value = calculate_hand_value(player_cards)
         if hand_value > 21:
+            print()
             print(f'You have busted with total hand value of {hand_value}.')
             break
