@@ -88,6 +88,49 @@ class Deck:
 
         return deck
 
+class BasePlayer:
+    def __init__(self):
+        self.hand = []
+        self.chips = 0
+
+    @property
+    def hand_value(self):
+        """ Calculate the total value of cards in a hand (list). """
+
+        total_card_value = 0
+
+        for card in self.hand:
+            if card.is_face_card:
+                if card.rank_long_str == 'ace':
+                    # If card is an ace, it is valued as 1
+                    #   if valuing it as 11 would lead to a bust.
+                    if total_card_value + 11 > 21:
+                        total_card_value += 1
+                    else:
+                        total_card_value += 11
+                else:
+                    total_card_value += 10
+            else:
+                # A numeric card is valued according to its numeric value.
+                total_card_value += card.rank + 2
+
+        return total_card_value
+
+class Dealer(BasePlayer):
+    def deal(self, deck, player, player_name):
+        card = deck.pop()
+        player.hand.append(card)
+        print(f'Dealer deals {player_name} {card}')
+
+    def deal_initial(self, deck, player):
+        self.deal(deck, player, 'you')
+        self.deal(deck, self, 'himself')
+        self.deal(deck, player, 'you')
+        self.deal(deck, self, 'himself')
+
+class Player(BasePlayer):
+    pass
+
 def prompt_choice(choices):
     """ Prompt for a choice until a valid response is given. """
 
@@ -117,63 +160,30 @@ def prompt_choice(choices):
 
     return choice_str
 
-def calculate_hand_value(hand):
-    """ Calculate the total value of cards in a hand (list). """
-
-    total_card_value = 0
-
-    for card in hand:
-        if card.is_face_card:
-            if card.rank_long_str == 'ace':
-                # If card is an ace, it is valued as 1
-                #   if valuing it as 11 would lead to a bust.
-                if total_card_value + 11 > 21:
-                    total_card_value += 1
-                else:
-                    total_card_value += 11
-            else:
-                total_card_value += 10
-        else:
-            # A numeric card is valued according to its numeric value.
-            total_card_value += card.rank + 2
-
-    return total_card_value
+player = Player()
+dealer = Dealer()
 
 def game():
     """ Play a single blackjack session. """
 
-    player_cards = []
-    dealer_cards = []
+    player.hand = []
+    dealer.hand = []
 
     print('Dealer shuffles a deck of cards.')
     deck = Deck.random()
 
-    card = deck.pop()
-    player_cards.append(card)
-    print(f'Dealer deals you {card}')
-
-    card = deck.pop()
-    dealer_cards.append(card)
-    print(f'Dealer deals himself {card}')
-
-    card = deck.pop()
-    player_cards.append(card)
-    print(f'Dealer deals you {card}')
-
-    card = deck.pop()
-    dealer_cards.append(card)
-    print(f'Dealer deals himself {card}')
+    dealer.deal_initial(deck, player)
 
     while True:
         print()
-        print('Your hand:', ', '.join(map(str, player_cards)))
-        print("Dealer's hand:", ', '.join(map(str, dealer_cards)))
+        print('Your hand:', ', '.join(map(str, player.hand)))
+        print("Dealer's hand:", ', '.join(map(str, dealer.hand)))
 
         choice = prompt_choice(['stay', 'hit'])
         print()
         if choice == 'stay':
-            dealer_hand_value = calculate_hand_value(dealer_cards)
-            player_hand_value = calculate_hand_value(player_cards)
+            dealer_hand_value = dealer.hand_value
+            player_hand_value = player.hand_value
 
             if dealer_hand_value == player_hand_value:
                 print(
@@ -192,11 +202,9 @@ def game():
                 )
             break
         elif choice == 'hit':
-            card = deck.pop()
-            player_cards.append(card)
-            print(f'Dealer deals you {card}')
+            dealer.deal(deck, player, 'you')
 
-            hand_value = calculate_hand_value(player_cards)
+            hand_value = player.hand_value
             if hand_value > 21:
                 print()
                 print(f'You have busted with hand value of {hand_value}.')
