@@ -92,12 +92,37 @@ class Deck:
 
         return deck
 
+class Chip:
+    def __init__(self, value, chip_type):
+        self.value = value
+        self.type = chip_type
+
 class BasePlayer:
     """ A representation of a person who can participate in the game. """
 
     def __init__(self):
         self.hand = []
-        self.chips = 0
+        self.chips = []
+
+    def remove_chips(self, amount):
+        """ Remove chips from player's stack.
+
+        Remove chips in decreasing value until total value of `amount`
+          chips have been removed.
+
+        """
+
+        new_stack = []
+        remaining_amount = amount
+
+        self.chips.sort(key=lambda chip: chip.value, reverse=True)
+        for chip in self.chips:
+            if chip.value <= remaining_amount:
+                new_stack.append(chip)
+                self.chips.remove(chip)
+                remaining_amount -= chip.value
+
+        return new_stack
 
     @property
     def hand_value(self):
