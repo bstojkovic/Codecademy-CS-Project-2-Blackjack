@@ -45,6 +45,8 @@ class Card:
 
     @property
     def is_face_card(self):
+        """ bool: Whether Card is one that depicts a person. """
+
         return self.rank > 8
 
     def __str__(self):
@@ -93,6 +95,14 @@ class Deck:
         return deck
 
 class Chip:
+    """ A representation of a casino chip (token).
+
+    Attributes:
+        value (int): Chip denomination; the value of a single chip.
+        type (str): Unique representation of chip's type, like color.
+
+    """
+
     def __init__(self, value, chip_type):
         self.value = value
         self.type = chip_type
@@ -125,6 +135,8 @@ class BasePlayer:
         return new_stack
 
     def print_chips(self):
+        """ Print amount of every chip type in stack, and total value. """
+
         chip_types = []
         chip_amount_by_type = {}
         for chip in self.chips:
