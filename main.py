@@ -124,6 +124,26 @@ class BasePlayer:
 
         return new_stack
 
+    def print_chips(self):
+        chip_types = []
+        chip_amount_by_type = {}
+        for chip in self.chips:
+            if chip_amount_by_type.get((chip.value, chip.type)) is None:
+                chip_amount_by_type[(chip.value, chip.type)] = 0
+                chip_types.append((chip.value, chip.type))
+            chip_amount_by_type[(chip.value, chip.type)] += 1
+        chip_types.sort(key=lambda tup: tup[0])
+
+        total_value = 0
+
+        for chip_value, chip_type in chip_types:
+            chip_amount = chip_amount_by_type[(chip_value, chip_type)]
+            print(f'{chip_amount} {chip_type} (${chip_value}) chips')
+
+            total_value += chip_amount * chip_value
+
+        print(f'Total chip value: ${total_value}')
+
     @property
     def hand_value(self):
         """ Calculate the total value of cards in a hand (list). """
@@ -200,6 +220,30 @@ def prompt_choice(choices):
 player = Player()
 dealer = Dealer()
 
+for chip_num, chip_value, chip_type in [
+        (0, 1, 'blue'),
+        (20, 5, 'red'),
+        (8, 25, 'green'),
+        (2, 100, 'black'),
+        (0, 500, 'purple'),
+        (0, 1000, 'orange')
+    ]:
+    for _ in range(chip_num):
+        chip = Chip(chip_value, chip_type)
+        player.chips.append(chip)
+
+for chip_num, chip_value, chip_type in [
+        (100, 1, 'blue'),
+        (20, 5, 'red'),
+        (12, 25, 'green'),
+        (5, 100, 'black'),
+        (2, 500, 'purple'),
+        (1, 1000, 'orange')
+    ]:
+    for _ in range(chip_num):
+        chip = Chip(chip_value, chip_type)
+        dealer.chips.append(chip)
+
 def game():
     """ Play a single blackjack session. """
 
@@ -212,6 +256,14 @@ def game():
     dealer.deal_initial(deck, player)
 
     while True:
+        print()
+        print('Your chips:')
+        player.print_chips()
+
+        print()
+        print("Dealer's chips:")
+        dealer.print_chips()
+
         print()
         print('Your hand:', ', '.join(map(str, player.hand)))
         print("Dealer's hand:", ', '.join(map(str, dealer.hand)))
