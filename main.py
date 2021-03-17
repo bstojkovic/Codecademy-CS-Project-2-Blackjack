@@ -136,27 +136,56 @@ class BasePlayer:
 
         return new_stack
 
-    def print_chips(self):
-        """ Print amount of every chip type in stack, and total value. """
+    def get_chips_by_type(self):
+        """ Return list of chip types and dictionary of amounts by type. """
 
         chip_types = []
         chip_amount_by_type = {}
+
         for chip in self.chips:
-            if chip_amount_by_type.get((chip.value, chip.type)) is None:
-                chip_amount_by_type[(chip.value, chip.type)] = 0
+            if chip_amount_by_type.get(chip.type) is None:
+                chip_amount_by_type[chip.type] = 0
                 chip_types.append((chip.value, chip.type))
-            chip_amount_by_type[(chip.value, chip.type)] += 1
+            chip_amount_by_type[chip.type] += 1
         chip_types.sort(key=lambda tup: tup[0])
 
+        return (chip_types, chip_amount_by_type)
+
+    def print_chips(self):
+        """ Print amount of every chip type in stack, and total value. """
+
+        chip_types, chip_amount_by_type = self.get_chips_by_type()
         total_value = 0
 
         for chip_value, chip_type in chip_types:
-            chip_amount = chip_amount_by_type[(chip_value, chip_type)]
+            chip_amount = chip_amount_by_type[chip_type]
             print(f'{chip_amount} {chip_type} (${chip_value}) chips')
 
             total_value += chip_amount * chip_value
 
         print(f'Total chip value: ${total_value}')
+
+    def check_bet(self, bet_value):
+        """ Check whether bet can be placed with current chip stacks. """
+
+        chip_types, chip_amount_by_type = self.get_chips_by_type()
+        chip_types.reverse()
+
+        remaining_value = bet_value
+        for chip_value, chip_type in chip_types:
+            available_amount = chip_amount_by_type[chip_type]
+            if available_amount * chip_value >= remaining_value:
+                chip_amount = int(remaining_value / chip_value)
+
+                remaining_value -= chip_amount * chip_value
+                chip_amount_by_type[chip_type] -= chip_amount
+
+                if remaining_value == 0:
+                    break
+        else:
+            return False
+
+        return True
 
     @property
     def hand_value(self):
@@ -306,7 +335,11 @@ def game():
     elif choice == 'bet maximum ($500)':
         player_bet = 500
     elif choice == 'bet custom':
+        player_chips = player.get_chips_by_type()
         player_bet = prompt_bet(5, 500)
+        while not player.check_bet(player_bet):
+            print("You don't have needed chips for this bet.")
+            player_bet = prompt_bet(5, 500)
 
     player_bet_chips = player.remove_chips(player_bet)
 
