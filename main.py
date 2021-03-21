@@ -188,6 +188,19 @@ class BasePlayer:
         return True
 
     @property
+    def chip_value(self):
+        """ Calculate the total value of chips in player's stack. """
+
+        chip_types, chip_amount_by_type = self.get_chips_by_type()
+        total_value = 0
+
+        for chip_value, chip_type in chip_types:
+            chip_amount = chip_amount_by_type[chip_type]
+            total_value += chip_amount * chip_value
+
+        return total_value
+
+    @property
     def hand_value(self):
         """ Calculate the total value of cards in a hand (list). """
 
@@ -309,6 +322,10 @@ for chip_num, chip_value, chip_type in [
 def game():
     """ Play a single blackjack session. """
 
+    if player.chip_value == 0:
+        print('You are all out of chips!')
+        return
+
     first_move = True
 
     player.hand = []
@@ -335,7 +352,6 @@ def game():
     elif choice == 'bet maximum ($500)':
         player_bet = 500
     elif choice == 'bet custom':
-        player_chips = player.get_chips_by_type()
         player_bet = prompt_bet(5, 500)
         while not player.check_bet(player_bet):
             print("You don't have needed chips for this bet.")
